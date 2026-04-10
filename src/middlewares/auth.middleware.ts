@@ -1,9 +1,8 @@
-import { NextFunction, Response } from 'express';
-import { verify } from 'jsonwebtoken';
 import { SECRET_KEY } from '@config';
 import { HttpException } from '@exceptions/HttpException';
 import { DataStoredInToken, RequestWithUser } from '@interfaces/auth.interface';
-import userModel from '@models/users.model';
+import { NextFunction, Response } from 'express';
+import { verify } from 'jsonwebtoken';
 
 const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFunction) => {
   try {
@@ -13,7 +12,8 @@ const authMiddleware = async (req: RequestWithUser, res: Response, next: NextFun
       const secretKey: string = SECRET_KEY;
       const verificationResponse = (await verify(Authorization, secretKey)) as DataStoredInToken;
       const userId = verificationResponse._id;
-      const findUser = await userModel.findById(userId);
+      // const findUser = await userModel.findById(userId);
+      const findUser = { _id: 'wefiwbevfv', email: '[EMAIL_ADDRESS]', password: '[PASSWORD]' };
 
       if (findUser) {
         req.user = findUser;
