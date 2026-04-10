@@ -1,0 +1,10 @@
+model User {
+  userId               String        @id @default(uuid()) @map("user_id")
+  email                String        @unique
+  password             String
+  name                 String?
+  organizationId       String?       @map("organization_id")
+  organization         Organization? @relation("UserOrganization", fields: [organizationId], references: [orgId])
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+}

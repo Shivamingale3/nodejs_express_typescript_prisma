@@ -1,0 +1,7 @@
+model Organization {
+  orgId                String   @id @default(uuid()) @map("org_id")
+  name                 String
+  users                User[]   @relation("UserOrganization")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
