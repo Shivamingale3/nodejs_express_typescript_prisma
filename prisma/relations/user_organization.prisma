@@ -6,8 +6,8 @@
 // more useful than Prisma's implicit many-to-many.
 
 model UserOrganization {
-  userId         String       @map("user_id")
-  organizationId String       @map("organization_id")
+  userId         String       @db.Uuid @map("user_id")
+  organizationId String       @db.Uuid @map("organization_id")
   role           UserRole     @default(MEMBER)
   user           User         @relation(fields: [userId], references: [userId])
   organization   Organization @relation(fields: [organizationId], references: [orgId])

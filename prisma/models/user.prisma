@@ -5,7 +5,7 @@
 // Relations: UserOrganization (from prisma/relations/user_organization.prisma)
 
 model User {
-  userId        String             @id @default(uuid()) @map("user_id")
+  userId        String             @id @default(dbgenerated("generate_ulid()::uuid")) @db.Uuid @map("user_id")
   email         String             @unique
   password      String
   name          String?
