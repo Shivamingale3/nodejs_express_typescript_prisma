@@ -9,6 +9,7 @@ export interface User {
   email: string;
   password: string;
   name?: string | null;
+  role?: string;
 }
 
 /**

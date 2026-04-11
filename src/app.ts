@@ -14,6 +14,7 @@ import { logger, stream } from '@utils/logger';
 import { parseOrigins } from '@utils/util';
 import prisma from '@databases/prisma';
 import { checkStorageHealth } from '@databases/storage';
+import { csrfMiddleware } from '@middlewares/csrf.middleware';
 
 class App {
   public app: express.Application;
@@ -99,6 +100,7 @@ class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
+    this.app.use(csrfMiddleware);
   }
 
   private initializeRoutes(routes: Routes[]) {
