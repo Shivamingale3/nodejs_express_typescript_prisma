@@ -16,7 +16,10 @@ class AuthService {
     const expiresIn = this.parseExpiresIn(jwtConfig.expiresIn);
 
     return {
-      token: jwt.sign(payload, SECRET_KEY, { algorithm: jwtConfig.algorithm as jwt.SignAlgorithm, expiresIn: jwtConfig.expiresIn }),
+      token: jwt.sign(payload, SECRET_KEY, {
+        algorithm: jwtConfig.algorithm as jwt.Algorithm,
+        expiresIn: jwtConfig.expiresIn as jwt.SignOptions['expiresIn'],
+      }),
       expiresIn,
     };
   }
@@ -29,7 +32,10 @@ class AuthService {
     const expiresIn = this.parseExpiresIn(jwtConfig.refreshExpiresIn);
 
     return {
-      token: jwt.sign(payload, SECRET_KEY, { algorithm: jwtConfig.algorithm as jwt.SignAlgorithm, expiresIn: jwtConfig.refreshExpiresIn }),
+      token: jwt.sign(payload, SECRET_KEY, {
+        algorithm: jwtConfig.algorithm as jwt.Algorithm,
+        expiresIn: jwtConfig.refreshExpiresIn as jwt.SignOptions['expiresIn'],
+      }),
       expiresIn,
     };
   }
@@ -38,7 +44,7 @@ class AuthService {
    * Verify a token and return the payload
    */
   public verifyToken(token: string): JwtPayload {
-    return jwt.verify(token, SECRET_KEY, { algorithms: [jwtConfig.algorithm as jwt.Algorithm] }) as JwtPayload;
+    return jwt.verify(token, SECRET_KEY, { algorithms: [jwtConfig.algorithm as jwt.Algorithm] }) as unknown as JwtPayload;
   }
 
   /**

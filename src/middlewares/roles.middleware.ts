@@ -1,8 +1,8 @@
+/// <reference types="reflect-metadata" />
 import { UserRole } from '@/generated/prisma/enums';
 import { NextFunction, Request, Response } from 'express';
 import { HttpException } from '@exceptions/HttpException';
-import 'reflect-metadata';
-import { ROLES_KEY } from '@decorators/roles.decorator';
+import { ROLES_KEY } from '@/decorators/roles.decorator';
 
 /**
  * Role-based Access Control (RBAC) Middleware

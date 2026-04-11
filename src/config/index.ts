@@ -34,6 +34,13 @@ const envSchema = z.object({
   S3_SECRET_KEY: z.string().optional(),
   S3_BUCKET: z.string().min(1, 'S3_BUCKET is required'),
   S3_FORCE_PATH_STYLE: z.coerce.boolean().default(false),
+  // Mail
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_SECURE: z.coerce.boolean().default(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 });
 
 // Parse the environment variables
@@ -74,4 +81,10 @@ export const {
   S3_SECRET_KEY,
   S3_BUCKET,
   S3_FORCE_PATH_STYLE,
+  SMTP_HOST,
+  SMTP_PORT,
+  SMTP_SECURE,
+  SMTP_USER,
+  SMTP_PASS,
+  SMTP_FROM,
 } = parsedEnv.data;

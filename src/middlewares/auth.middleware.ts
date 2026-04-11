@@ -1,7 +1,7 @@
-import { Response } from 'express';
+import { NextFunction, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { SECRET_KEY } from '@config';
-import { jwtConfig } from '@config/jwt.config';
+import { jwtConfig } from '@/config/jwt.config';
 import { HttpException } from '@exceptions/HttpException';
 import { JwtPayload, RequestWithUser } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
@@ -14,7 +14,7 @@ const authMiddleware = async (req: RequestWithUser, _res: Response, next: NextFu
 
     if (authToken) {
       const secretKey: string = SECRET_KEY ?? '';
-      const verificationResponse = jwt.verify(authToken, secretKey, { algorithms: [jwtConfig.algorithm] }) as JwtPayload;
+      const verificationResponse = jwt.verify(authToken, secretKey, { algorithms: [jwtConfig.algorithm as jwt.Algorithm] }) as unknown as JwtPayload;
       const userId = verificationResponse.userId;
       const findUser = await prisma.user.findUnique({ where: { userId } });
 

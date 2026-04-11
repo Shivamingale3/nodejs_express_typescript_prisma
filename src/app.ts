@@ -14,6 +14,7 @@ import { logger, stream } from '@utils/logger';
 import { parseOrigins } from '@utils/util';
 import prisma from '@databases/prisma';
 import { checkStorageHealth } from '@databases/storage';
+import { checkMailHealth } from '@databases/mail';
 import { csrfMiddleware } from '@middlewares/csrf.middleware';
 
 class App {
@@ -28,6 +29,7 @@ class App {
 
     this.connectToDatabase();
     this.connectToStorage();
+    this.connectToMail();
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
     this.initializeSwagger();
@@ -56,6 +58,15 @@ class App {
 
   private async connectToStorage(): Promise<void> {
     const health = await checkStorageHealth();
+    if (health.healthy) {
+      logger.info(`✅ ${health.message}`);
+    } else {
+      logger.warn(`⚠️  ${health.message}`);
+    }
+  }
+
+  private async connectToMail(): Promise<void> {
+    const health = await checkMailHealth();
     if (health.healthy) {
       logger.info(`✅ ${health.message}`);
     } else {
