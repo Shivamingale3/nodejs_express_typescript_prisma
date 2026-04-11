@@ -13,6 +13,7 @@ import errorMiddleware from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
 import { parseOrigins } from '@utils/util';
 import prisma from '@databases/prisma';
+import { checkStorageHealth } from '@databases/storage';
 
 class App {
   public app: express.Application;
@@ -25,6 +26,7 @@ class App {
     this.port = PORT || 3000;
 
     this.connectToDatabase();
+    this.connectToStorage();
     this.initializeMiddlewares();
     this.initializeRoutes(routes);
     this.initializeSwagger();
@@ -48,6 +50,15 @@ class App {
     } catch (error) {
       logger.error('❌ Database connection failed', error);
       process.exit(1);
+    }
+  }
+
+  private async connectToStorage(): Promise<void> {
+    const health = await checkStorageHealth();
+    if (health.healthy) {
+      logger.info(`✅ ${health.message}`);
+    } else {
+      logger.warn(`⚠️  ${health.message}`);
     }
   }
 
