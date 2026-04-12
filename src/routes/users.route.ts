@@ -1,5 +1,5 @@
 import { Router, RequestHandler } from 'express';
-import UsersController from '@controllers/users.controller';
+import usersController from '@controllers/users.controller';
 import { CreateUserDto } from '@dtos/users.dto';
 import { Routes } from '@interfaces/routes.interface';
 import validationMiddleware from '@middlewares/validation.middleware';
@@ -9,36 +9,39 @@ import { rolesMiddleware } from '@middlewares/roles.middleware';
 class UsersRoute implements Routes {
   public path = '/users';
   public router = Router();
-  public usersController = new UsersController();
 
   constructor() {
     this.initializeRoutes();
   }
 
   private initializeRoutes() {
-    // Public routes - no auth required
-    this.router.get(`${this.path}`, this.usersController.getUsers);
-    this.router.get(`${this.path}/:id`, this.usersController.getUserById);
+    this.router.get(`${this.path}`, usersController.getUsers as RequestHandler);
+    this.router.get(`${this.path}/:id`, usersController.getUserById as RequestHandler);
 
-    // Authenticated routes
     this.router.post(
       `${this.path}`,
       authMiddleware as RequestHandler,
       validationMiddleware(CreateUserDto, 'body') as RequestHandler,
-      this.usersController.createUser,
+      usersController.createUser as RequestHandler,
     );
 
-    // Admin-only routes
     this.router.put(
       `${this.path}/:id`,
       authMiddleware as RequestHandler,
       rolesMiddleware as RequestHandler,
       validationMiddleware(CreateUserDto, 'body', true) as RequestHandler,
-      this.usersController.updateUser,
+      usersController.updateUser as RequestHandler,
     );
 
-    this.router.delete(`${this.path}/:id`, authMiddleware as RequestHandler, rolesMiddleware as RequestHandler, this.usersController.deleteUser);
+    this.router.delete(
+      `${this.path}/:id`,
+      authMiddleware as RequestHandler,
+      rolesMiddleware as RequestHandler,
+      usersController.deleteUser as RequestHandler,
+    );
   }
 }
 
-export default UsersRoute;
+// Module-level singleton
+const usersRoute = new UsersRoute();
+export default usersRoute;

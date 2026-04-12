@@ -2,14 +2,57 @@ import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@interfaces/users.interface';
 import prisma from '@databases/prisma';
 
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 class UserService {
-  public async findAllUser(): Promise<User[]> {
-    const users = await prisma.user.findMany();
-    return users as unknown as User[];
+  public async findAllUser(page: number = 1, limit: number = 20): Promise<{ users: User[]; meta: PaginationMeta }> {
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          userId: true,
+          email: true,
+          name: true,
+          role: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+      prisma.user.count(),
+    ]);
+
+    return {
+      users: users as unknown as User[],
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   public async findUserById(userId: string): Promise<User | null> {
-    const user = await prisma.user.findUnique({ where: { userId } });
+    const user = await prisma.user.findUnique({
+      where: { userId },
+      select: {
+        userId: true,
+        email: true,
+        name: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     return user as unknown as User | null;
   }
 
@@ -28,4 +71,6 @@ class UserService {
   }
 }
 
-export default UserService;
+// Module-level singleton
+const userService = new UserService();
+export default userService;

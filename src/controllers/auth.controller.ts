@@ -1,18 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
 import { CreateUserDto } from '@dtos/users.dto';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import AuthService from '@services/auth.service';
+import authService from '@services/auth.service';
 import { cookieService } from '@services/cookie.service';
+import { apiSuccess, apiError } from '@utils/response';
 
 class AuthController {
-  public authService = new AuthService();
-
   public signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;
-      const user = await this.authService.signup(userData);
+      const user = await authService.signup(userData);
 
-      res.status(201).json({ data: { user }, message: 'signup' });
+      apiSuccess(res, { user }, 'User created successfully', undefined, 201);
     } catch (error) {
       next(error);
     }
@@ -21,18 +20,24 @@ class AuthController {
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;
-      const { accessToken, refreshToken, user } = await this.authService.login(userData);
+      const { accessToken, refreshToken, user } = await authService.login(userData);
 
       cookieService.setCookies(res, accessToken.token, refreshToken.token, accessToken.expiresIn, refreshToken.expiresIn);
 
-      res.status(200).json({
-        data: {
-          user,
+      apiSuccess(
+        res,
+        {
+          user: {
+            userId: user.userId,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          },
           accessToken: accessToken.token,
           refreshToken: refreshToken.token,
         },
-        message: 'login',
-      });
+        'Login successful',
+      );
     } catch (error) {
       next(error);
     }
@@ -40,10 +45,10 @@ class AuthController {
 
   public logOut = async (req: RequestWithUser, res: Response, next: NextFunction) => {
     try {
-      await this.authService.logout();
+      await authService.logout();
       cookieService.clearCookies(res);
 
-      res.status(200).json({ data: null, message: 'logout' });
+      apiSuccess(res, null, 'Logged out successfully');
     } catch (error) {
       next(error);
     }
@@ -53,25 +58,33 @@ class AuthController {
     try {
       const refreshToken = req.cookies['RefreshToken'] || req.header('X-Refresh-Token');
       if (!refreshToken) {
-        res.status(400).json({ message: 'Refresh token is required' });
+        apiError(res, 'AUTH_MISSING_REFRESH_TOKEN', 'Refresh token is required', 400);
         return;
       }
 
-      const { accessToken, refreshToken: newRefreshToken, user } = await this.authService.refreshTokens(refreshToken);
+      const { accessToken, refreshToken: newRefreshToken, user } = await authService.refreshTokens(refreshToken);
       cookieService.setCookies(res, accessToken.token, newRefreshToken.token, accessToken.expiresIn, newRefreshToken.expiresIn);
 
-      res.status(200).json({
-        data: {
-          user,
+      apiSuccess(
+        res,
+        {
+          user: {
+            userId: user.userId,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          },
           accessToken: accessToken.token,
           refreshToken: newRefreshToken.token,
         },
-        message: 'token_refreshed',
-      });
+        'Token refreshed successfully',
+      );
     } catch (error) {
       next(error);
     }
   };
 }
 
-export default AuthController;
+// Module-level singleton
+const authController = new AuthController();
+export default authController;

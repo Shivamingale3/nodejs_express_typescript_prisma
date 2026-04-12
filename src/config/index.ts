@@ -46,7 +46,8 @@ const envSchema = z.object({
 // Parse the environment variables
 const parsedEnv = envSchema.safeParse(process.env);
 
-if (!parsedEnv.success) {
+// Skip validation in test environment — tests use .env.test directly
+if (process.env.NODE_ENV !== 'test' && !parsedEnv.success) {
   console.error('❌ Invalid environment variables:');
   const errors = parsedEnv.error.format();
 
@@ -57,6 +58,9 @@ if (!parsedEnv.success) {
   }
   process.exit(1);
 }
+
+// Use defaults in test, validated config otherwise
+const env = process.env.NODE_ENV === 'test' ? envSchema.parse({}) : parsedEnv.data;
 
 // Export the validated variables
 export const {
@@ -87,4 +91,4 @@ export const {
   SMTP_USER,
   SMTP_PASS,
   SMTP_FROM,
-} = parsedEnv.data;
+} = env;

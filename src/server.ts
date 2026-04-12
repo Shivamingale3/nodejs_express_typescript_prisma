@@ -1,8 +1,11 @@
 import App from '@/app';
-import AuthRoute from '@routes/auth.route';
-import IndexRoute from '@routes/index.route';
-import UsersRoute from '@routes/users.route';
+import authRoute from '@routes/auth.route';
+import indexRoute from '@routes/index.route';
+import usersRoute from '@routes/users.route';
 
-const app = new App([new IndexRoute(), new UsersRoute(), new AuthRoute()]);
+const app = new App([indexRoute, usersRoute, authRoute]);
 
-app.listen();
+app.start().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});

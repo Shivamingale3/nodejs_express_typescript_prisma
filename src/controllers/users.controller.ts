@@ -1,16 +1,21 @@
 import { NextFunction, Request, Response } from 'express';
 import { CreateUserDto } from '@dtos/users.dto';
-import { User } from '@interfaces/users.interface';
 import userService from '@services/users.service';
+import { apiSuccess, apiError } from '@utils/response';
+import { isULID } from '@interfaces/users.interface';
 
 class UsersController {
-  public userService = new userService();
-
   public getUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const findAllUsersData: User[] = await this.userService.findAllUser();
+      const page = parseInt(String(req.query['page'] ?? '1'), 10);
+      const limit = parseInt(String(req.query['limit'] ?? '20'), 10);
 
-      res.status(200).json({ data: findAllUsersData, message: 'findAll' });
+      const validPage = isNaN(page) || page < 1 ? 1 : page;
+      const validLimit = isNaN(limit) || limit < 1 ? 20 : limit > 100 ? 100 : limit;
+
+      const { users, meta } = await userService.findAllUser(validPage, validLimit);
+
+      apiSuccess(res, { users }, 'Users retrieved successfully', meta);
     } catch (error) {
       next(error);
     }
@@ -18,10 +23,21 @@ class UsersController {
 
   public getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId: string = req.params.id as string;
-      const findOneUserData: User | null = await this.userService.findUserById(userId);
+      const userId: string = req.params.id;
 
-      res.status(200).json({ data: findOneUserData, message: 'findOne' });
+      if (!isULID(userId)) {
+        apiError(res, 'VALIDATION_INVALID_ID', 'Invalid user ID format', 400);
+        return;
+      }
+
+      const user = await userService.findUserById(userId);
+
+      if (!user) {
+        apiError(res, 'USER_NOT_FOUND', 'User not found', 404);
+        return;
+      }
+
+      apiSuccess(res, { user }, 'User retrieved successfully');
     } catch (error) {
       next(error);
     }
@@ -30,9 +46,9 @@ class UsersController {
   public createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;
-      const createUserData: User = await this.userService.createUser(userData);
+      const user = await userService.createUser(userData);
 
-      res.status(201).json({ data: createUserData, message: 'created' });
+      apiSuccess(res, { user }, 'User created successfully', undefined, 201);
     } catch (error) {
       next(error);
     }
@@ -40,11 +56,17 @@ class UsersController {
 
   public updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId: string = req.params.id as string;
+      const userId: string = req.params.id;
       const userData: Partial<CreateUserDto> = req.body;
-      const updateUserData: User = await this.userService.updateUser(userId, userData);
 
-      res.status(200).json({ data: updateUserData, message: 'updated' });
+      if (!isULID(userId)) {
+        apiError(res, 'VALIDATION_INVALID_ID', 'Invalid user ID format', 400);
+        return;
+      }
+
+      const user = await userService.updateUser(userId, userData);
+
+      apiSuccess(res, { user }, 'User updated successfully');
     } catch (error) {
       next(error);
     }
@@ -52,14 +74,22 @@ class UsersController {
 
   public deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId: string = req.params.id as string;
-      await this.userService.deleteUser(userId);
+      const userId: string = req.params.id;
 
-      res.status(200).json({ data: null, message: 'deleted' });
+      if (!isULID(userId)) {
+        apiError(res, 'VALIDATION_INVALID_ID', 'Invalid user ID format', 400);
+        return;
+      }
+
+      await userService.deleteUser(userId);
+
+      apiSuccess(res, null, 'User deleted successfully');
     } catch (error) {
       next(error);
     }
   };
 }
 
-export default UsersController;
+// Module-level singleton
+const usersController = new UsersController();
+export default usersController;

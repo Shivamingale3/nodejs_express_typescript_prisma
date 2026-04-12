@@ -1,20 +1,53 @@
-version: '3.7'
 
 services:
   server:
     build:
-      context: ./
+      context: .
       target: development-build-stage
       dockerfile: Dockerfile
-    container_name: server
+    container_name: app_server
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+      - LOG_FORMAT=${LOG_FORMAT:-dev}
+      - LOG_DIR=${LOG_DIR:-./logs}
+      - ORIGIN=${ORIGIN:-*}
+      - CREDENTIALS=${CREDENTIALS:-false}
+      - COOKIE_AUTH_NAME=${COOKIE_AUTH_NAME:-Authorization}
+      - COOKIE_REFRESH_NAME=${COOKIE_REFRESH_NAME:-RefreshToken}
+      - COOKIE_DOMAIN=${COOKIE_DOMAIN:-}
+      - COOKIE_SECURE=${COOKIE_SECURE:-false}
+      - S3_REGION=${S3_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET:-}
+      - S3_ENDPOINT=${S3_ENDPOINT:-}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-}
+      - S3_FORCE_PATH_STYLE=${S3_FORCE_PATH_STYLE:-false}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
     ports:
       - '3000:3000'
     volumes:
-      - ./:/app
+      - .:/app
       - /app/node_modules
-    restart: 'unless-stopped'
+    restart: unless-stopped
     networks:
       - backend
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '--spider', 'http://localhost:3000/health/live']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 networks:
   backend:

@@ -3,7 +3,7 @@
   "version": "1.1.7",
   "private": false,
   "type": "module",
-  "description": "TypeScript + Express + Mongoose + MongoDB",
+  "description": "TypeScript + Express + Prisma + PostgreSQL",
   "license": "ISC",
   "author": "Ahmad Joya",
   "bin": {
@@ -14,10 +14,16 @@
     "dev": "cross-env NODE_ENV=development nodemon",
     "build": "swc src -d dist --source-maps --copy-files",
     "build:tsc": "tsc && tsc-alias",
-    "test": "jest --forceExit --detectOpenHandles",
+    "test": "cross-env NODE_ENV=test jest --forceExit --detectOpenHandles --config jest.config.cjs",
     "lint": "eslint src/",
     "lint:fix": "npm run lint -- --fix",
-    "postinstall": "npx husky install"
+    "postinstall": "npx husky install",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1029.0",
@@ -84,6 +90,9 @@
     "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -98,13 +107,11 @@
     "Express",
     "ExpressJS",
     "express.js",
-    "mongoose",
+    "prisma",
     "typescript express",
-    "typescript express mongoose",
+    "typescript express prisma",
     "starter",
-    "boilerplate",
-    "typescript express mongooses tarter",
-    "typescript-express-mongooses-tarter"
+    "boilerplate"
   ],
   "bugs": {
     "url": "https://github.com/ahmadjoya/typescript-express-mongoose-starter/issues"
